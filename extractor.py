@@ -17,6 +17,7 @@ def process_file(filename):
     funcDefs = funcDefExtractor.returnStats()
     
     for funcDef in funcDefs:
+        flag = True
         outObject = {
             "funcName": funcDef.name,
             "args": [],
@@ -54,15 +55,15 @@ def process_file(filename):
 
         # process return statements and return type label
         for ret in args_returns["returnStatement"]:
-            outObject["returnStatements"].append(ast.unparse(ret.value))
+            try:
+                outObject["returnStatements"].append(ast.unparse(ret.value))
+            except AttributeError:
+                pass
 
         try:
             outObject["returnType"] = ast.unparse(funcDef.returns)
         except:
-            print('\n')
-            print("!!!ERROR:")
-            print(ast.dump(funcDef.returns))
-            print('\n')
+            flag = False
 
         # processing assignments (e.g., x = 1)
         identifiers = []
@@ -83,7 +84,8 @@ def process_file(filename):
         outObject["body"]["lists"] = body["lists"]
         outObject["body"]["tuples"] = body["tuples"]
 
-        output.append(outObject)
+        if(flag):
+            output.append(outObject)
 
 
     return output
@@ -177,13 +179,28 @@ class BodyExtractor(ast.NodeVisitor):
         self.generic_visit(node)
 
 def main():
-    output = process_file("./data/test_input.py")
-    # directory = ''
+    output = []
+    directory = r'C:\Users\botab\Desktop\typewriter\TypeWriter-ButWorse\data\training'
+    counter = 0
+    for filename in os.listdir(directory):
+        counter += 1
+        try:
+            filepath = os.path.join(directory, filename)
+            output.append(process_file(filepath))
+        except UnicodeDecodeError:
+            pass
+        except SyntaxError:
+            pass
+
+    print(len(output))
+    print(counter)
+
+    print(output[0])
 
 
-    for i in range(len(output)):
-        print(output[i])
-        print('\n')
+    # for i in range(len(output)):
+    #     print(output[i])
+    #     print('\n')
     
 
 if __name__ == "__main__":
