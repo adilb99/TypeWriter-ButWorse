@@ -1,4 +1,4 @@
-def addTwoNumbers(x: int, y: int) -> int:
+def addTwoNumbers(x: any, y: int) -> int:
     '''
     Here's a doc string that will tell us something 
     '''
@@ -17,6 +17,17 @@ def addTwoNumbers(x: int, y: int) -> int:
 
     if(dummy_operation == False):
         return False
+
+    if(dummy_operation == True):
+        return x + y
+
+    some = {"field": 1}
+
+    if(dummy_operation == True):
+        return some["field"]
+
+    if(dummy_operation == True):
+        return decrementNumber(2)
 
     sum_of_x_y = new_x + new_y
 

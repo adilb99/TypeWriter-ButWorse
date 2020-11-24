@@ -2,6 +2,7 @@
 import ast
 # from nltk.tokenize import sent_tokenize, word_tokenize
 from pprint import pprint
+import os
 
 def process_file(filename):
     with open(filename, "r") as source:
@@ -14,12 +15,13 @@ def process_file(filename):
 
     funcDefExtractor.visit(tree)
     funcDefs = funcDefExtractor.returnStats()
-
+    
     for funcDef in funcDefs:
         outObject = {
             "funcName": funcDef.name,
             "args": [],
-            "returns": [],
+            "returnType": "None",
+            "returnStatements": [],
             "body": {
                 "assigns": [], 
                 "docstring": '',
@@ -41,32 +43,39 @@ def process_file(filename):
         
         # process all arguments
         for arg in args_returns["args"]:
-            argObject = {
-                "name": arg.arg,
-                "type": arg.annotation
-                }
-            outObject["args"].append(argObject)
-
+            try:
+                argObject = {
+                    "name": arg.arg,
+                    "type": ast.unparse(arg.annotation)
+                    }
+                outObject["args"].append(argObject)
+            except:
+                pass
 
         # process return statements and return type label
         for ret in args_returns["returnStatement"]:
-            retObject = {
-                "statement": ret,
-                "type": funcDef.returns
-            }
-            outObject["returns"].append(retObject)
+            outObject["returnStatements"].append(ast.unparse(ret.value))
+
+        try:
+            outObject["returnType"] = ast.unparse(funcDef.returns)
+        except:
+            print('\n')
+            print("!!!ERROR:")
+            print(ast.dump(funcDef.returns))
+            print('\n')
 
         # processing assignments (e.g., x = 1)
+        identifiers = []
         for assign in body["assigns"]:
-            assObject = {
-                "target": assign.targets,
-                "value": assign.value
-            }
-            outObject["body"]["assigns"].append(assObject)
+            try:
+                identifiers += [ast.unparse(tar) for tar in assign.targets]
+            except AttributeError:
+                identifiers += [ast.unparse(assign.target)]
+        outObject["body"]["assigns"] = identifiers
 
         # processing docstring
-        outObject["body"]["docstring"] = body["docstring"]
-
+        outObject["body"]["docstring"] = ast.get_docstring(funcDef)
+        
         # processing number of occurences of certain data types
         outObject["body"]["numbers"] = body["numbers"]
         outObject["body"]["strings"] = body["strings"]
@@ -130,6 +139,10 @@ class BodyExtractor(ast.NodeVisitor):
         self.stats["assigns"].append(node)
         self.generic_visit(node)
 
+    def visit_AnnAssign(self, node):
+        self.stats["assigns"].append(node)
+        self.generic_visit(node)
+
     # doc string
     def visit_Expr(self, node):
         self.stats["docstring"].append(node)
@@ -164,32 +177,14 @@ class BodyExtractor(ast.NodeVisitor):
         self.generic_visit(node)
 
 def main():
-    output = process_file("./data/test.py")
+    output = process_file("./data/test_input.py")
+    # directory = ''
+
+
+    for i in range(len(output)):
+        print(output[i])
+        print('\n')
     
-    print('funcName: ', output[0]["funcName"])
-    print('args: ')
-    for arg in output[0]["args"]:
-        print('name: ', arg["name"], "; type: ", ast.dump(arg["type"]))
-    
-    print('returns: ')
-    for ret in output[0]["returns"]:
-        print("statement: ", ast.dump(ret["statement"]), "; type: ", ast.dump(ret["type"]))
-
-    print('body: ')
-    print('assigns: ')
-    for assign in output[0]["body"]["assigns"]:
-        print('targets: ')
-        for tar in assign["target"]:
-            print(ast.dump(tar))
-        print('value: ', ast.dump(assign["value"]))
-
-    print('docstring: ', ast.dump(output[0]["body"]["docstring"][0]))
-
-    print('numbers: ', output[0]["body"]["numbers"])
-    print('strings: ', output[0]["body"]["strings"])
-    print('booleans: ', output[0]["body"]["booleans"])
-    print('lists: ', output[0]["body"]["lists"])
-    print('tuples: ', output[0]["body"]["tuples"])
 
 if __name__ == "__main__":
     main()
