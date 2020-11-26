@@ -180,28 +180,54 @@ class BodyExtractor(ast.NodeVisitor):
 
 def main():
     output = []
-    directory = r'C:\Users\botab\Desktop\typewriter\TypeWriter-ButWorse\data\training'
+    directory = r'C:\Users\botab\Desktop\typewriter\TypeWriter-ButWorse\data\validation'
     counter = 0
     for filename in os.listdir(directory):
         counter += 1
         try:
             filepath = os.path.join(directory, filename)
-            output.append(process_file(filepath))
+            output += process_file(filepath)
         except UnicodeDecodeError:
             pass
         except SyntaxError:
             pass
 
-    print(len(output))
-    print(counter)
+    arg_data = []
+    ret_data = []
 
-    print(output[0])
+    for func in output:
+        for arg in func["args"]:
+            arg_object = {
+                "data": {
+                    "funcName": func["funcName"],
+                    "args": [a["name"] for a in func["args"]],
+                    "assigns": func["body"]["assigns"],
+                    "returnStatements": func["returnStatements"],
+                    "docstring": func["body"]["docstring"],
+                    "occurences": [func["body"]["numbers"], func["body"]["strings"], func["body"]["booleans"], func["body"]["lists"], func["body"]["tuples"]] 
+                },
+                "label": arg["type"]
+            }
+
+            arg_data.append(arg_object)
+
+        ret_object = {
+            "data": {
+                "funcName": func["funcName"],
+                "args": [a["name"] for a in func["args"]],
+                "assigns": func["body"]["assigns"],
+                "returnStatements": func["returnStatements"],
+                "docstring": func["body"]["docstring"],
+                "occurences": [func["body"]["numbers"], func["body"]["strings"], func["body"]["booleans"], func["body"]["lists"], func["body"]["tuples"]] 
+            },
+            "label": func["returnType"]
+            }
+
+        ret_data.append(ret_object)
 
 
-    # for i in range(len(output)):
-    #     print(output[i])
-    #     print('\n')
-    
+    print(arg_data[0])
+    print(ret_data[0])
 
 if __name__ == "__main__":
     main()
