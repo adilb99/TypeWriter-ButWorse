@@ -1,8 +1,13 @@
 # import nltk
 import ast
-# from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.corpus import stopwords
+import re
+import pickle
 from pprint import pprint
 import os
+import re
+from gensim.models import Word2Vec
 
 def process_file(filename):
     with open(filename, "r") as source:
@@ -178,24 +183,26 @@ class BodyExtractor(ast.NodeVisitor):
         self.stats["tuples"] += 1
         self.generic_visit(node)
 
-def main():
-    output = []
-    directory = r'C:\Users\botab\Desktop\typewriter\TypeWriter-ButWorse\data\validation'
-    counter = 0
-    for filename in os.listdir(directory):
-        counter += 1
-        try:
-            filepath = os.path.join(directory, filename)
-            output += process_file(filepath)
-        except UnicodeDecodeError:
-            pass
-        except SyntaxError:
-            pass
+def preprocess_docstring(string):
+    if (string):
+        string = re.sub('[^a-zA-Z]', ' ', string)
+        string = re.sub(r'\s+', ' ', string)
+        sents = sent_tokenize(string)
+        words = []
+        for sent in sents:
+            for word in word_tokenize(sent):
+                if word not in stopwords.words('english'):
+                    words.append(word)
+        return words
+    else:
+        return string
 
+
+def make_objects(output):
     arg_data = []
     ret_data = []
-
     for func in output:
+        docstr = preprocess_docstring(func["body"]["docstring"])
         for arg in func["args"]:
             arg_object = {
                 "data": {
@@ -203,7 +210,7 @@ def main():
                     "args": [a["name"] for a in func["args"]],
                     "assigns": func["body"]["assigns"],
                     "returnStatements": func["returnStatements"],
-                    "docstring": func["body"]["docstring"],
+                    "docstring": docstr,
                     "occurences": [func["body"]["numbers"], func["body"]["strings"], func["body"]["booleans"], func["body"]["lists"], func["body"]["tuples"]] 
                 },
                 "label": arg["type"]
@@ -217,17 +224,48 @@ def main():
                 "args": [a["name"] for a in func["args"]],
                 "assigns": func["body"]["assigns"],
                 "returnStatements": func["returnStatements"],
-                "docstring": func["body"]["docstring"],
+                "docstring": docstr,
                 "occurences": [func["body"]["numbers"], func["body"]["strings"], func["body"]["booleans"], func["body"]["lists"], func["body"]["tuples"]] 
             },
             "label": func["returnType"]
             }
 
         ret_data.append(ret_object)
+    return (arg_data, ret_data)
 
+def main():
+    output = []
+    directory = r'data/validation'
+    counter = 0
+    for filename in os.listdir(directory):
+        counter += 1
+        try:
+            filepath = os.path.join(directory, filename)
+            output += process_file(filepath)
+        except UnicodeDecodeError:
+            pass
+        except SyntaxError:
+             pass
 
-    print(arg_data[0])
-    print(ret_data[0])
+    (arg_data, ret_data) = make_objects(output)
+    ## used for faster rerun
+    # with open("arg_data.pkl", "wb") as f:
+    #    pickle.dump(arg_data, f)
+
+    # with open("ret_data.pkl", "wb") as f:
+    #    pickle.dump(ret_data, f)
+    # with open("arg_data.pkl", "rb") as f:
+    #    arg_data = pickle.load(f)
+
+    # with open("ret_data.pkl", "rb") as f:
+    #    ret_data = pickle.load(f)
+    all_words = []
+    for obj in ret_data:
+        docstr = obj["data"]["docstring"]
+        if docstr:
+            for word in docstr:
+                all_words.append(docstr)
+    word2vec = Word2Vec(all_words, min_count=1)
 
 if __name__ == "__main__":
     main()
