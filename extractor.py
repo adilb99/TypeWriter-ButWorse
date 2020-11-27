@@ -4,10 +4,8 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 import re
 import pickle
-from pprint import pprint
 import os
 import re
-from gensim.models import Word2Vec
 
 def process_file(filename):
     with open(filename, "r") as source:
@@ -235,38 +233,42 @@ def make_objects(output):
     return (arg_data, ret_data)
 
 def main():
-    output = []
-    directory = r'data/validation'
-    counter = 0
-    for filename in os.listdir(directory):
-        counter += 1
+    output_tr = []
+    output_val = []
+    dir_training = r'data/training'
+    dir_validation = r'data/validation'
+    for filename in os.listdir(dir_training):
         try:
-            filepath = os.path.join(directory, filename)
-            output += process_file(filepath)
+            filepath = os.path.join(dir_training, filename)
+            output_tr += process_file(filepath)
         except UnicodeDecodeError:
             pass
         except SyntaxError:
              pass
 
-    (arg_data, ret_data) = make_objects(output)
-    ## used for faster rerun
-    # with open("arg_data.pkl", "wb") as f:
-    #    pickle.dump(arg_data, f)
+    for filename in os.listdir(dir_validation):
+        try:
+            filepath = os.path.join(dir_validation, filename)
+            output_val += process_file(filepath)
+        except UnicodeDecodeError:
+            pass
+        except SyntaxError:
+             pass
 
-    # with open("ret_data.pkl", "wb") as f:
-    #    pickle.dump(ret_data, f)
-    # with open("arg_data.pkl", "rb") as f:
-    #    arg_data = pickle.load(f)
+    (arg_data_training, ret_data_training) = make_objects(output_tr)
+    (arg_data_validation, ret_data_validation) = make_objects(output_val)
 
-    # with open("ret_data.pkl", "rb") as f:
-    #    ret_data = pickle.load(f)
-    all_words = []
-    for obj in ret_data:
-        docstr = obj["data"]["docstring"]
-        if docstr:
-            for word in docstr:
-                all_words.append(docstr)
-    word2vec = Word2Vec(all_words, min_count=1)
+    with open("arg_data_training.pkl", "wb") as f:
+        pickle.dump(arg_data_training, f)
+
+    with open("ret_data_training.pkl", "wb") as f:
+        pickle.dump(ret_data_training, f)
+
+    with open("arg_data_validation.pkl", "wb") as f:
+        pickle.dump(arg_data_validation, f)
+
+    with open("ret_data_validation.pkl", "wb") as f:
+        pickle.dump(ret_data_validation, f)
 
 if __name__ == "__main__":
     main()
