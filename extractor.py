@@ -15,13 +15,13 @@ def process_file(filename):
 
     output = []    
     funcDefExtractor = FuncDefExtractor()
-    argsAndReturnsExtractor = ArgsAndReturnsExtractor()
-    bodyExtractor = BodyExtractor()
 
     funcDefExtractor.visit(tree)
     funcDefs = funcDefExtractor.returnStats()
     
     for funcDef in funcDefs:
+        argsAndReturnsExtractor = ArgsAndReturnsExtractor()
+        bodyExtractor = BodyExtractor()
         flag = True
         outObject = {
             "funcName": funcDef.name,
@@ -207,7 +207,8 @@ def make_objects(output):
             arg_object = {
                 "data": {
                     "funcName": func["funcName"],
-                    "args": [a["name"] for a in func["args"]],
+                    "argName": arg["name"],
+                    "allArgs": [a["name"] for a in func["args"]],
                     "assigns": func["body"]["assigns"],
                     "returnStatements": func["returnStatements"],
                     "docstring": docstr,
@@ -221,7 +222,7 @@ def make_objects(output):
         ret_object = {
             "data": {
                 "funcName": func["funcName"],
-                "args": [a["name"] for a in func["args"]],
+                "allArgs": [a["name"] for a in func["args"]],
                 "assigns": func["body"]["assigns"],
                 "returnStatements": func["returnStatements"],
                 "docstring": docstr,
