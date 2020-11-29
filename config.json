@@ -1,0 +1,25 @@
+{
+    "traindir": "path/to/dir",
+    "model_dir": "path/to/model",
+    "epochs": 20,
+
+    "model":{
+        "input_size":100, 
+        "hidden_size":100,
+        "num_layers":1,
+        "output_size":100
+    },
+
+    "use_gpu":false,
+
+    "optimizer":{
+        "available": ["SGD", "Adam"],
+        "used": "SGD",
+        "SGD": {
+            "lr": 0.001
+        },
+        "Adam": {
+            "lr": 0.001
+        }
+    }
+}
