@@ -435,14 +435,17 @@ def main():
 
     # with open("ret_data_validation.pkl", "wb") as f:
     #     pickle.dump(ret_data_validation, f)
-    print ("training/arg")
-    save_info(arg_data_training, "training/arg", chars, w2v_docstring, all_labels)
-    print ("val/arg")
-    save_info(arg_data_validation, "validation/arg", chars, w2v_docstring, all_labels)
-    print ("training/ret")
-    save_info(ret_data_training, "training/arg", chars, w2v_docstring, all_labels)
-    print ("validation/ret")
-    save_info(ret_data_validation, "validation/arg", chars, w2v_docstring, all_labels)
+    
+
+
+    # print ("training/arg")
+    # save_info(arg_data_training, "training/arg", chars, w2v_docstring, all_labels)
+    # print ("val/arg")
+    # save_info(arg_data_validation, "validation/arg", chars, w2v_docstring, all_labels)
+    # print ("training/ret")
+    # save_info(ret_data_training, "training/arg", chars, w2v_docstring, all_labels)
+    # print ("validation/ret")
+    # save_info(ret_data_validation, "validation/arg", chars, w2v_docstring, all_labels)
     
     return
 
