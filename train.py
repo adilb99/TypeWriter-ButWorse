@@ -1,12 +1,14 @@
 import os
+import numpy as np
 import torch
 import torch.nn as nn
-import numpy as np
 from torch.utils.tensorboard import SummaryWriter
+from torch.utils.data import DataLoader
 
+from dataset import TWDataset
 from model import TWModel
 
-class Agent:
+class TWAgent:
     def __init__(self, cfg):
         self.cfg = cfg
         self.device = torch.device('cuda' if self.cfg.use_gpu and torch.cuda.is_available() else 'cpu')
@@ -14,7 +16,7 @@ class Agent:
 
         self.model = None
 
-    def build_model(self, ):
+    def build_model(self):
         input_size = self.cfg.model.input_size
         hidden_size = self.cfg.model.hidden_size
         num_layers = self.cfg.model.num_layers
@@ -22,9 +24,11 @@ class Agent:
         self.model = TWModel(input_size, hidden_size, num_layers, output_size)
     
     def build_trainval_data(self):
-        self.train_data_loader = None
-        self.val_data_loader = None
-        # TODO: build data loaders
+        self.train_dataset = TWDataset(data_dir=self.cfg.train_dir)
+        self.val_dataset = TWDataset(data_dir=self.cfg.val_dir)
+        
+        self.train_data_loader = DataLoader(self.train_dataset, batch_size=self.cfg.batch_size, shuffle=True, num_workers=2)
+        self.val_data_loader = DataLoader(self.val_dataset, batch_size=self.cfg.batch_size, shuffle=False, num_workers=2)
 
     def train(self):
         self.best_loss = float("inf")
@@ -37,6 +41,7 @@ class Agent:
             last_epoch = self.load_model()
 
         epochs = self.cfg.epochs
+        # TODO: Fix pathes
         self.train_writer = SummaryWriter("path", "Train")
         self.val_writer = SummaryWriter("path", "Val")
 

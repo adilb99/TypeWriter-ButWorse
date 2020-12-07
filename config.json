@@ -1,5 +1,7 @@
 {
-    "traindir": "path/to/dir",
+    "train_dir": "path/to/dir",
+    "val_dir": "path/to/dir",
+    "test_dir": "path/to/dir",
     "model_dir": "path/to/model",
     "epochs": 20,
 
