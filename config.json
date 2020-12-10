@@ -1,8 +1,17 @@
 {
-    "train_dir": "path/to/dir",
-    "val_dir": "path/to/dir",
-    "test_dir": "path/to/dir",
-    "model_dir": "path/to/model",
+    "train_datadir": "sample/",
+    "train_filenames": "sample/sample.txt",
+    
+    "val_datadir": "sample/",
+    "var_filenames": "sample/sample.txt",
+    
+    "test_datadir": "sample/",
+    "test_dir": "sample/sample.txt",
+    
+    "model_dir": "1/model.pth",
+
+    "train_sum": "1/tensorboard/train",
+    "val_sum": "1/tensorboard/val",
     "epochs": 20,
 
     "model":{
@@ -10,7 +19,7 @@
         "hidden_size":100,
         "aval_type_size": 0,
         "num_layers":1,
-        "output_size":100
+        "output_size":2000
     },
 
     "use_gpu":false,

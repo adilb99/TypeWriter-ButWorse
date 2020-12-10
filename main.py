@@ -38,5 +38,4 @@ def main():
     agent = TWAgent(cfg)
 
     if args.m == 'train':
-        return 
         agent.train()
