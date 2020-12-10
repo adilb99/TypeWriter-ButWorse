@@ -22,7 +22,7 @@ class TWModel(nn.Module):
         self.lstm_doc = nn.LSTM(100, self.hidden_size, self.num_layers, batch_first=True,
                                bidirectional=True)
 
-        self.linear = nn.Linear(hidden_size * 4 * 2, self.output_size)
+        self.linear = nn.Linear(hidden_size * 3 * 2, self.output_size)
 
     def forward(self, x_fb, x_doc, x_occ):
         # Flattens LSTMs weights for data-parallelism in multi-GPUs config
@@ -81,7 +81,7 @@ def test():
 
     x_doc= torch.randn(5, 100, 100)
 
-    x_out = model(x_occ, x_doc, x_fb)
+    x_out = model(x_fb, x_doc, x_occ)
     print(x_out.shape)
 
 test()

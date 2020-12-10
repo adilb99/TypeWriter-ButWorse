@@ -12,14 +12,16 @@
 
     "train_sum": "1/tensorboard/train",
     "val_sum": "1/tensorboard/val",
+    
     "epochs": 20,
+    "batch_size": 1,
 
     "model":{
         "input_size":100, 
         "hidden_size":100,
         "aval_type_size": 0,
         "num_layers":1,
-        "output_size":2000
+        "output_size":1000
     },
 
     "use_gpu":false,

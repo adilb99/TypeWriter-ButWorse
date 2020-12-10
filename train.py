@@ -5,7 +5,7 @@ import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 
-from dataset import TWDataset
+from dataset import TWDataset, collate_fn
 from twmodel import TWModel
 
 class TWAgent:
@@ -21,15 +21,16 @@ class TWAgent:
         hidden_size = self.cfg.model.hidden_size
         num_layers = self.cfg.model.num_layers
         output_size = self.cfg.model.output_size
-        aval_type_size = self.cfg.model.aval_type_size
-        self.model = TWModel(input_size, hidden_size, aval_type_size, num_layers, output_size)
+        self.model = TWModel(input_size, hidden_size, num_layers, output_size)
 
     def build_trainval_data(self):
         self.train_dataset = TWDataset(data_dir=self.cfg.train_datadir , fnames=self.cfg.train_filenames)
         self.val_dataset = TWDataset(data_dir=self.cfg.val_datadir , fnames=self.cfg.var_filenames)
 
-        self.train_data_loader = DataLoader(self.train_dataset, batch_size=self.cfg.batch_size, shuffle=True, num_workers=2)
-        self.val_data_loader = DataLoader(self.val_dataset, batch_size=self.cfg.batch_size, shuffle=False, num_workers=2)
+        self.train_data_loader = DataLoader(self.train_dataset, batch_size=self.cfg.batch_size,\
+                                            collate_fn=collate_fn,shuffle=True, num_workers=2)
+        self.val_data_loader = DataLoader(self.val_dataset, batch_size=self.cfg.batch_size,\
+                                            collate_fn=collate_fn,shuffle=False, num_workers=2)
 
     def train(self):
         self.best_loss = float("inf")
@@ -37,6 +38,8 @@ class TWAgent:
         self.build_model()
         self.criterion = self.build_loss_function()
         self.optimizer = self.build_optimizer()
+
+        self.build_trainval_data()
 
         last_epoch = 0
         if os.path.exists(self.checkpoint_dir):
@@ -61,6 +64,9 @@ class TWAgent:
         total_loss = 0
         self.model.train()
         for batch_idx, (batch_fb, batch_doc, batch_occ, labels) in enumerate(self.train_data_loader):
+            batch_fb, batch_occ = batch_fb.to(torch.float32), batch_occ.to(torch.float32)
+            labels = labels.to(torch.float32)
+            labels = torch.argmax(labels, dim=1)
             batch_fb, batch_doc, batch_occ = batch_fb.to(self.device), batch_doc.to(self.device),\
                                                         batch_occ.to(self.device)
             labels = labels.to(self.device)
@@ -83,6 +89,9 @@ class TWAgent:
         total_loss = 0
         self.model.eval()
         for batch_idx, (batch_fb, batch_doc, batch_occ, labels) in enumerate(self.val_data_loader):
+            batch_fb, batch_occ = batch_fb.to(torch.float32), batch_occ.to(torch.float32)
+            labels = labels.to(torch.float32)
+            labels = torch.argmax(labels, dim=1)
             batch_fb, batch_doc, batch_occ = batch_fb.to(self.device), batch_doc.to(self.device),\
                                                         batch_occ.to(self.device)
             labels = labels.to(self.device)
