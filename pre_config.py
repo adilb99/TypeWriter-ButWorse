@@ -29,4 +29,4 @@ SEPARATOR_MINOR = ";;"
 #   arg_data: sum (fixlens.items()[1]) - fixlens["docstring"] + 5 * len (SEPARATOR) #default 949
 SLIDING_WINDOW_SIZE=40
 
-STEP_SIZE=3
+STEP_SIZE=7
