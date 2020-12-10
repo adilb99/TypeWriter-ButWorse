@@ -6,7 +6,7 @@ from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 
 from dataset import TWDataset
-from model import TWModel
+from twmodel import TWModel
 
 class TWAgent:
     def __init__(self, cfg):
@@ -21,7 +21,8 @@ class TWAgent:
         hidden_size = self.cfg.model.hidden_size
         num_layers = self.cfg.model.num_layers
         output_size = self.cfg.model.output_size
-        self.model = TWModel(input_size, hidden_size, num_layers, output_size)
+        aval_type_size = self.cfg.model.aval_type_size
+        self.model = TWModel(input_size, hidden_size, aval_type_size, num_layers, output_size)
     
     def build_trainval_data(self):
         self.train_dataset = TWDataset(data_dir=self.cfg.train_dir)
@@ -33,6 +34,7 @@ class TWAgent:
     def train(self):
         self.best_loss = float("inf")
 
+        self.build_model()
         self.criterion = self.build_loss_function()
         self.optimizer = self.build_optimizer()
 

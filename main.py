@@ -26,7 +26,8 @@ def parse_arguments():
 
 
 def read_cfg(cfg_file):
-    cfg = json.loads(cfg_file)
+    with open(cfg_file) as f:
+      cfg = json.loads(f.read())
     cfg = EasyDict(cfg)
     return cfg
 

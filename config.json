@@ -8,6 +8,7 @@
     "model":{
         "input_size":100, 
         "hidden_size":100,
+        "aval_type_size": 0,
         "num_layers":1,
         "output_size":100
     },
