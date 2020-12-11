@@ -1,6 +1,8 @@
 import os
 import numpy as np
 from tqdm import tqdm
+from sklearn.metrics import f1_score
+
 import torch
 import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
@@ -39,6 +41,7 @@ class TWAgent:
     def train(self):
         self.best_loss = float("inf")
         self.best_acc = 0
+        self.f1 = 0
 
         self.build_model()
         self.criterion = self.build_loss_function()
@@ -57,10 +60,11 @@ class TWAgent:
         for epoch in range(last_epoch + 1, epochs + 1):
             self.train_per_epoch(epoch)
             if epoch > 1:
-                loss, acc = self.validate_per_epoch(epoch)
+                loss, acc, f1 = self.validate_per_epoch(epoch)
                 if loss < self.best_loss:
                     self.best_loss = loss
                     self.best_acc = acc
+                    self.f1 = f1
                     self.save_model(epoch)
 
         self.train_writer.close()
@@ -70,6 +74,10 @@ class TWAgent:
         total_acc = 0
         tqdm_batch = tqdm(total=self.train_steps, dynamic_ncols=True)
         total_loss = 0
+
+        all_labels = []
+        all_outs = []
+
         self.model.train()
         for batch_idx, (batch_fb, batch_doc, batch_occ, labels) in enumerate(self.train_data_loader):
             batch_fb, batch_occ = batch_fb.to(torch.float32), batch_occ.to(torch.float32)
@@ -87,25 +95,38 @@ class TWAgent:
             self.optimizer.step()
 
             total_loss += loss.item()
-            acc = (outputs.argmax(dim=1) == labels).float()
+            outputs = outputs.argmax(dim=1)
+            acc = (outputs == labels).float()
             total_acc += acc
+
+            all_labels.append(labels.detach().numpy())
+            all_outs.append(outputs.detach().numpy())
 
             tqdm_update = "Epoch={0:04d},loss={1:.4f}, acc={2:.4f}".format(epoch, loss.item(), acc.mean())
             tqdm_batch.set_postfix_str(tqdm_update)
             tqdm_batch.update()
 
         total_acc /= len(self.train_dataset)
+        all_labels = np.concatenate(all_labels)
+        all_outs = np.concatenate(all_outs)
+        f1 = f1_score(all_labels, all_outs, average='weighted')
+
         self.train_writer.add_scalar('Loss', total_loss, epoch)
         self.train_writer.add_scalar('acc', total_acc, epoch)
-        print("epoch", epoch, "loss:", total_loss, "accuracy", total_acc)
+        self.train_writer.add_scalar('f1', f1, epoch)
+        print("epoch", epoch, "loss:", total_loss, "accuracy", total_acc, "f1", f1)
 
         tqdm_batch.close()
-        return total_loss, total_acc
+        return total_loss, total_acc, f1
 
     def validate_per_epoch(self, epoch):
         total_acc = 0
         tqdm_batch = tqdm(total=self.val_steps, dynamic_ncols=True)
         total_loss = 0
+
+        all_labels = []
+        all_outs = []
+
         self.model.eval()
         for batch_idx, (batch_fb, batch_doc, batch_occ, labels) in enumerate(self.val_data_loader):
             batch_fb, batch_occ = batch_fb.to(torch.float32), batch_occ.to(torch.float32)
@@ -123,20 +144,29 @@ class TWAgent:
             self.optimizer.step()
 
             total_loss += loss.item()
-            acc = (outputs.argmax(dim=1) == labels).float()
+            outputs = outputs.argmax(dim=1)
+            acc = (outputs == labels).float()
             total_acc += acc
+
+            all_labels.append(labels.detach().numpy())
+            all_outs.append(outputs.detach().numpy())
 
             tqdm_update = "Epoch={0:04d},loss={1:.4f}, acc={2:.4f}".format(epoch, loss.item(), acc.mean())
             tqdm_batch.set_postfix_str(tqdm_update)
             tqdm_batch.update()
 
         total_acc /= len(self.val_dataset)
+        all_labels = np.concatenate(all_labels)
+        all_outs = np.concatenate(all_outs)
+        f1 = f1_score(all_labels, all_outs, average='weighted')
+
         self.val_writer.add_scalar('Loss', total_loss, epoch)
         self.val_writer.add_scalar('acc', total_acc, epoch)
-        print("epoch", epoch, "loss:", total_loss, "accuracy", total_acc)
+        self.val_writer.add_scalar('f1', f1, epoch)
+        print("epoch", epoch, "loss:", total_loss, "accuracy", total_acc, "f1", f1)
 
         tqdm_batch.close()
-        return total_loss, total_acc
+        return total_loss, total_acc, f1
 
     def make_prediction(self):
         pass
@@ -159,6 +189,7 @@ class TWAgent:
                 'optimizer':self.optimizer.state_dict(),
                 'best_loss': self.best_loss,
                 "best_acc": self.best_acc,
+                "f1": self.f1,
                 "epoch": epoch}
         torch.save(ckpt, self.checkpoint_dir)
 
@@ -168,5 +199,6 @@ class TWAgent:
         self.optimizer.load_state_dict(ckpt['optimizer'])
         self.best_loss = ckpt['best_loss']
         self.best_acc = ckpt['best_acc']
+        self.f1 = ckpt["f1"]
 
         return ckpt['epoch']
