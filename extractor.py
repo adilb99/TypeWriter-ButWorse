@@ -348,8 +348,10 @@ def docstr2array(d, keyvecs):
         docstr_matrix = np.zeros((100, length), dtype = np.float32)
     return docstr_matrix
 
-def save_info (data, prefix, chars, w2v, all_labels):
+def save_info (data, prefix, chars, w2v, all_labels, limit):
     for i, dp in enumerate(data):
+        if (limit != 0 and i>limit):
+            break
         string = makestr(dp["data"])
         bodyinf = makearray(string, chars)
         doc = docstr2array(dp["data"]["docstring"], w2v)
@@ -365,14 +367,19 @@ def save_info (data, prefix, chars, w2v, all_labels):
         ty = prefix.split("/")[1]
         fn = dp["data"]["fileName"].split("/")[-1].split("\\")[-1]
         filename = ty +"-"+ fn+"-"+dp["data"]["funcName"]
-        with open ("numpy/"+direct+"/"+filename+"-body-"+str(i)+".npy", "wb") as f:
-            np.save(f, bodyinf)
-        with open ("numpy/"+direct+"/"+filename+"-doc-"+str(i)+".npy", "wb") as f:
-            np.save(f, doc)
-        with open ("numpy/"+direct+"/"+filename+"-occur-"+str(i)+".npy", "wb") as f:
-            np.save(f, occurences)
-        with open ("numpy/"+direct+"/"+filename+"-labels-"+str(i)+".npy", "wb") as f:
-            np.save(f, labels)
+        if i == 1:
+            print (bodyinf.shape)
+            print (doc.shape)
+            print (occurences.shape)
+            print (labels.shape)
+        # with open ("numpy/"+direct+"/"+filename+"-body-"+str(i)+".npy", "wb") as f:
+        #     np.save(f, bodyinf)
+        # with open ("numpy/"+direct+"/"+filename+"-doc-"+str(i)+".npy", "wb") as f:
+        #     np.save(f, doc)
+        # with open ("numpy/"+direct+"/"+filename+"-occur-"+str(i)+".npy", "wb") as f:
+        #     np.save(f, occurences)
+        # with open ("numpy/"+direct+"/"+filename+"-labels-"+str(i)+".npy", "wb") as f:
+        #     np.save(f, labels)
     return
 
 
@@ -411,11 +418,11 @@ def main():
     with open("ret_data_validation.pkl", "rb") as f:
         ret_data_validation = pickle.load(f)
 
-    print ("Training word2vec for docstring...")
-    train_w2v(ret_data_training, ret_data_validation)
-    print ("Making the list of all labels...")
-    make_labels_list(arg_data_training, arg_data_validation,
-                     ret_data_training, ret_data_validation)
+    # print ("Training word2vec for docstring...")
+    # train_w2v(ret_data_training, ret_data_validation)
+    # print ("Making the list of all labels...")
+    # make_labels_list(arg_data_training, arg_data_validation,
+    #                  ret_data_training, ret_data_validation)
 
     with open("all_labels.pkl", "rb") as f:
         all_labels = pickle.load(f)
@@ -439,13 +446,13 @@ def main():
 
 
     # print ("training/arg")
-    # save_info(arg_data_training, "training/arg", chars, w2v_docstring, all_labels)
+    # save_info(arg_data_training, "training/arg", chars, w2v_docstring, all_labels, 25000)
     # print ("val/arg")
-    # save_info(arg_data_validation, "validation/arg", chars, w2v_docstring, all_labels)
+    # save_info(arg_data_validation, "validation/arg", chars, w2v_docstring, all_labels, 0)
     # print ("training/ret")
-    # save_info(ret_data_training, "training/arg", chars, w2v_docstring, all_labels)
+    # save_info(ret_data_training, "training/ret", chars, w2v_docstring, all_labels, 25000)
     # print ("validation/ret")
-    # save_info(ret_data_validation, "validation/arg", chars, w2v_docstring, all_labels)
+    # save_info(ret_data_validation, "validation/ret", chars, w2v_docstring, all_labels, 0)
     
     return
 
