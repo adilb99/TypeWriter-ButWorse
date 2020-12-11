@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from tqdm import tqdm
 import torch
 import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
@@ -27,6 +28,9 @@ class TWAgent:
         self.train_dataset = TWDataset(data_dir=self.cfg.train_datadir , fnames=self.cfg.train_filenames)
         self.val_dataset = TWDataset(data_dir=self.cfg.val_datadir , fnames=self.cfg.var_filenames)
 
+        self.train_steps = len(self.train_dataset) // self.cfg.batch_size
+        self.val_steps = len(self.val_dataset) // self.cfg.batch_size
+
         self.train_data_loader = DataLoader(self.train_dataset, batch_size=self.cfg.batch_size,\
                                             collate_fn=collate_fn,shuffle=True, num_workers=2)
         self.val_data_loader = DataLoader(self.val_dataset, batch_size=self.cfg.batch_size,\
@@ -34,6 +38,7 @@ class TWAgent:
 
     def train(self):
         self.best_loss = float("inf")
+        self.best_acc = 0
 
         self.build_model()
         self.criterion = self.build_loss_function()
@@ -52,15 +57,18 @@ class TWAgent:
         for epoch in range(last_epoch + 1, epochs + 1):
             self.train_per_epoch(epoch)
             if epoch > 1:
-                loss = self.validate_per_epoch(epoch)
+                loss, acc = self.validate_per_epoch(epoch)
                 if loss < self.best_loss:
                     self.best_loss = loss
+                    self.best_acc = acc
                     self.save_model(epoch)
 
         self.train_writer.close()
         self.val_writer.close()
 
     def train_per_epoch(self, epoch):
+        total_acc = 0
+        tqdm_batch = tqdm(total=self.train_steps, dynamic_ncols=True)
         total_loss = 0
         self.model.train()
         for batch_idx, (batch_fb, batch_doc, batch_occ, labels) in enumerate(self.train_data_loader):
@@ -79,13 +87,24 @@ class TWAgent:
             self.optimizer.step()
 
             total_loss += loss.item()
+            acc = (outputs.argmax(dim=1) == labels).float()
+            total_acc += acc
 
+            tqdm_update = "Epoch={0:04d},loss={1:.4f}, acc={2:.4f}".format(epoch, loss.item(), acc.mean())
+            tqdm_batch.set_postfix_str(tqdm_update)
+            tqdm_batch.update()
+
+        total_acc /= len(self.train_dataset)
         self.train_writer.add_scalar('Loss', total_loss, epoch)
-        print("epoch", epoch, "loss:", total_loss)
+        self.train_writer.add_scalar('acc', total_acc, epoch)
+        print("epoch", epoch, "loss:", total_loss, "accuracy", total_acc)
 
-        return total_loss
+        tqdm_batch.close()
+        return total_loss, total_acc
 
     def validate_per_epoch(self, epoch):
+        total_acc = 0
+        tqdm_batch = tqdm(total=self.val_steps, dynamic_ncols=True)
         total_loss = 0
         self.model.eval()
         for batch_idx, (batch_fb, batch_doc, batch_occ, labels) in enumerate(self.val_data_loader):
@@ -104,11 +123,20 @@ class TWAgent:
             self.optimizer.step()
 
             total_loss += loss.item()
+            acc = (outputs.argmax(dim=1) == labels).float()
+            total_acc += acc
 
+            tqdm_update = "Epoch={0:04d},loss={1:.4f}, acc={2:.4f}".format(epoch, loss.item(), acc.mean())
+            tqdm_batch.set_postfix_str(tqdm_update)
+            tqdm_batch.update()
+
+        total_acc /= len(self.val_dataset)
         self.val_writer.add_scalar('Loss', total_loss, epoch)
-        print("epoch", epoch, "loss:", total_loss)
+        self.val_writer.add_scalar('acc', total_acc, epoch)
+        print("epoch", epoch, "loss:", total_loss, "accuracy", total_acc)
 
-        return total_loss
+        tqdm_batch.close()
+        return total_loss, total_acc
 
     def make_prediction(self):
         pass
@@ -130,6 +158,7 @@ class TWAgent:
         ckpt = {'my_classifier': self.model.state_dict(),
                 'optimizer':self.optimizer.state_dict(),
                 'best_loss': self.best_loss,
+                "best_acc": self.best_acc,
                 "epoch": epoch}
         torch.save(ckpt, self.checkpoint_dir)
 
@@ -138,5 +167,6 @@ class TWAgent:
         self.model.load_state_dict(ckpt['model'])
         self.optimizer.load_state_dict(ckpt['optimizer'])
         self.best_loss = ckpt['best_loss']
+        self.best_acc = ckpt['best_acc']
 
         return ckpt['epoch']
