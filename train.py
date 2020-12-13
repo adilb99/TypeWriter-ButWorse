@@ -24,7 +24,7 @@ class TWAgent:
         hidden_size = self.cfg.model.hidden_size
         num_layers = self.cfg.model.num_layers
         output_size = self.cfg.model.output_size
-        self.model = TWModel(input_size, hidden_size, num_layers, output_size)
+        self.model = TWModel(input_size, hidden_size, num_layers, output_size).to(self.device)
 
     def build_trainval_data(self):
         self.train_dataset = TWDataset(data_dir=self.cfg.train_datadir , fnames=self.cfg.train_filenames)
@@ -99,8 +99,8 @@ class TWAgent:
             acc = (outputs == labels).float().sum()
             total_acc += acc
 
-            all_labels.append(labels.detach().numpy())
-            all_outs.append(outputs.detach().numpy())
+            all_labels.append(labels.cpu().numpy())
+            all_outs.append(outputs.cpu().numpy())
 
             tqdm_update = "Epoch={0:04d},loss={1:.4f}, acc={2:.4f}".format(epoch, loss.item(), acc / labels.shape[0])
             tqdm_batch.set_postfix_str(tqdm_update)
@@ -136,20 +136,16 @@ class TWAgent:
                                                         batch_occ.to(self.device)
             labels = labels.to(self.device)
 
-            self.optimizer.zero_grad()
             outputs = self.model(batch_fb, batch_doc, batch_occ)
             loss = self.criterion(outputs, labels)
-
-            loss.backward()
-            self.optimizer.step()
 
             total_loss += loss.item()
             outputs = outputs.argmax(dim=1)
             acc = (outputs == labels).float().sum()
             total_acc += acc
 
-            all_labels.append(labels.detach().numpy())
-            all_outs.append(outputs.detach().numpy())
+            all_labels.append(labels.cpu().numpy())
+            all_outs.append(outputs.cpu().numpy())
 
             tqdm_update = "Epoch={0:04d},loss={1:.4f}, acc={2:.4f}".format(epoch, loss.item(), acc / labels.shape[0])
             tqdm_batch.set_postfix_str(tqdm_update)
@@ -195,7 +191,7 @@ class TWAgent:
 
     def load_model(self):
         ckpt = torch.load(self.checkpoint_dir)
-        self.model.load_state_dict(ckpt['model'])
+        self.model.load_state_dict(ckpt['model']).to(self.device)
         self.optimizer.load_state_dict(ckpt['optimizer'])
         self.best_loss = ckpt['best_loss']
         self.best_acc = ckpt['best_acc']
