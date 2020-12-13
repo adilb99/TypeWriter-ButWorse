@@ -96,13 +96,13 @@ class TWAgent:
 
             total_loss += loss.item()
             outputs = outputs.argmax(dim=1)
-            acc = (outputs == labels).float()
+            acc = (outputs == labels).float().sum()
             total_acc += acc
 
             all_labels.append(labels.detach().numpy())
             all_outs.append(outputs.detach().numpy())
 
-            tqdm_update = "Epoch={0:04d},loss={1:.4f}, acc={2:.4f}".format(epoch, loss.item(), acc.mean())
+            tqdm_update = "Epoch={0:04d},loss={1:.4f}, acc={2:.4f}".format(epoch, loss.item(), acc / labels.shape[0])
             tqdm_batch.set_postfix_str(tqdm_update)
             tqdm_batch.update()
 
@@ -145,13 +145,13 @@ class TWAgent:
 
             total_loss += loss.item()
             outputs = outputs.argmax(dim=1)
-            acc = (outputs == labels).float()
+            acc = (outputs == labels).float().sum()
             total_acc += acc
 
             all_labels.append(labels.detach().numpy())
             all_outs.append(outputs.detach().numpy())
 
-            tqdm_update = "Epoch={0:04d},loss={1:.4f}, acc={2:.4f}".format(epoch, loss.item(), acc.mean())
+            tqdm_update = "Epoch={0:04d},loss={1:.4f}, acc={2:.4f}".format(epoch, loss.item(), acc / labels.shape[0])
             tqdm_batch.set_postfix_str(tqdm_update)
             tqdm_batch.update()
 
