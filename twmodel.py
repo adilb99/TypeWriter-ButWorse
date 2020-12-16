@@ -83,5 +83,3 @@ def test():
 
     x_out = model(x_fb, x_doc, x_occ)
     print(x_out.shape)
-
-test()

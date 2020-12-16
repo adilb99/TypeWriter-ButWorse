@@ -16,7 +16,8 @@ class TWAgent:
         self.cfg = cfg
         self.device = torch.device('cuda' if self.cfg.use_gpu and torch.cuda.is_available() else 'cpu')
         self.checkpoint_dir = self.cfg.model_dir
-
+        print (self.device)
+        print (torch.cuda.get_device_name(torch.cuda.current_device()))
         self.model = None
 
     def build_model(self):
