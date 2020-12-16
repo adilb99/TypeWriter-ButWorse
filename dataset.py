@@ -16,8 +16,15 @@ class TWDataset(Dataset):
             sample should contain input info and labels
         '''
         fnames = self.data_list[index]
-        sample = [np.load(self.data_dir + fname) for fname in fnames]
+        # sample = [np.load(self.data_dir + fname) for fname in fnames]
+        sample = []
+        for fname in fnames:
+            if fname.endswith("\n"):
+                fname = fname[:-1]
+            sample.append(np.load(self.data_dir + fname))
         sample[0] = sample[0].reshape(-1, 113)
+        if sample[0].shape[0]==5080:
+            sample[0] = np.concat(sample[0], np.zeros((120,113), np.bool))
         sample[2] = sample[2].reshape(1, -1)
         for i in range(len(sample)):
             sample[i] = torch.tensor(sample[i])
