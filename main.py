@@ -7,11 +7,6 @@ from easydict import EasyDict
 
 from train import TWAgent
 
-root_dir = os.path.realpath(__file__)
-while not root_dir.endswith("TYPEWRITER-BUTWORSE"):
-  root_dir = os.path.dirname(root_dir)
-sys.path.append(root_dir)
-
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
@@ -36,6 +31,8 @@ def main():
     args = parse_arguments()
     cfg = read_cfg(args.config)
     agent = TWAgent(cfg)
-
-    if args.m == 'train':
+    if args.mode == 'train':
         agent.train()
+
+if __name__ == "__main__":
+  main()
