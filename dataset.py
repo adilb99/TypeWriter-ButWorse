@@ -24,7 +24,7 @@ class TWDataset(Dataset):
             sample.append(np.load(self.data_dir + fname))
         sample[0] = sample[0].reshape(-1, 113)
         if sample[0].shape[0]==5080:
-            sample[0] = np.concat(sample[0], np.zeros((120,113), np.bool))
+            sample[0] = np.concatenate((sample[0], np.zeros((120,113), dtype=np.bool)))
         sample[2] = sample[2].reshape(1, -1)
         for i in range(len(sample)):
             sample[i] = torch.tensor(sample[i])
