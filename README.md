@@ -1,4 +1,7 @@
 # TypeWriter
+
+  ! Short project summary here !
+
 -------------------  
 ## Running guide:  
 
@@ -14,9 +17,17 @@
 
 ### Data Extraction and Preparation:  
 
-+ ...  
++ Extract the training.tar.gz and validation.tar.gz archives of raw .py files in the ./data directory 
 
-### RUN!!!:
++ Open extractor.py and uncomment the commented code in the ``` main ``` function to extract and vectorize data from .py files
+
++ Alternatively, keep the code commented and run it as is to use/open pickles of already extracted code. (in the ./pickles directory)
+
++ Adjust the directory path in the code to store .npy files after processing.
+
++ The .npy files are then ready to be used by the model
+
+### Running the model:
 + Change the paths and configurations in your config file. 
 
 + Run the model:  

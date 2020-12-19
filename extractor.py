@@ -384,6 +384,7 @@ def save_info (data, prefix, chars, w2v, all_labels, limit):
 
 
 def main():
+    ## Extracting data
     # output_tr = []
     # output_val = []
     # dir_training = r'data/training'
@@ -406,31 +407,35 @@ def main():
     #     except SyntaxError:
     #          pass
 
+    ## Reformatting the data
     # (arg_data_training, ret_data_training) = make_objects(output_tr)
     # (arg_data_validation, ret_data_validation) = make_objects(output_val)
 
-    with open("arg_data_training.pkl", "rb") as f:
+    #  Opening existing pickles
+    with open("./pickles/arg_data_training.pkl", "rb") as f:
         arg_data_training = pickle.load(f)
-    with open("arg_data_validation.pkl", "rb") as f:
+    with open("./pickles/arg_data_validation.pkl", "rb") as f:
         arg_data_validation = pickle.load(f)
-    with open("ret_data_training.pkl", "rb") as f:
+    with open("./pickles/ret_data_training.pkl", "rb") as f:
         ret_data_training = pickle.load(f)
-    with open("ret_data_validation.pkl", "rb") as f:
+    with open("./pickles/ret_data_validation.pkl", "rb") as f:
         ret_data_validation = pickle.load(f)
 
+    ##  vectorizing docstring
     # print ("Training word2vec for docstring...")
     # train_w2v(ret_data_training, ret_data_validation)
     # print ("Making the list of all labels...")
     # make_labels_list(arg_data_training, arg_data_validation,
     #                  ret_data_training, ret_data_validation)
 
-    with open("all_labels.pkl", "rb") as f:
+    #  Opening existing pickles
+    with open("./pickles/all_labels.pkl", "rb") as f:
         all_labels = pickle.load(f)
 
     w2v_docstring = KeyedVectors.load('w2v_docstring.wordvectors', mmap='r')
     chars = populate_alphabet(arg_data_training+arg_data_validation)
 
-
+    ## Create new pickles
     # with open("arg_data_training.pkl", "wb") as f:
     #     pickle.dump(arg_data_training, f)
 
@@ -444,7 +449,7 @@ def main():
     #     pickle.dump(ret_data_validation, f)
     
 
-
+    ## Saving extracted data
     # print ("training/arg")
     # save_info(arg_data_training, "training/arg", chars, w2v_docstring, all_labels, 25000)
     # print ("val/arg")

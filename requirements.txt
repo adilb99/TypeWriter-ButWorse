@@ -2,3 +2,5 @@ numpy
 easydict
 torch
 tqdm
+nltk
+gensim
