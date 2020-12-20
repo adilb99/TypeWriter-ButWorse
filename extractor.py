@@ -372,19 +372,20 @@ def save_info (data, prefix, chars, w2v, all_labels, limit):
             print (doc.shape)
             print (occurences.shape)
             print (labels.shape)
-        # with open ("numpy/"+direct+"/"+filename+"-body-"+str(i)+".npy", "wb") as f:
-        #     np.save(f, bodyinf)
-        # with open ("numpy/"+direct+"/"+filename+"-doc-"+str(i)+".npy", "wb") as f:
-        #     np.save(f, doc)
-        # with open ("numpy/"+direct+"/"+filename+"-occur-"+str(i)+".npy", "wb") as f:
-        #     np.save(f, occurences)
-        # with open ("numpy/"+direct+"/"+filename+"-labels-"+str(i)+".npy", "wb") as f:
-        #     np.save(f, labels)
+        with open ("numpy/"+direct+"/"+filename+"-body-"+str(i)+".npy", "wb") as f:
+            np.save(f, bodyinf)
+        with open ("numpy/"+direct+"/"+filename+"-doc-"+str(i)+".npy", "wb") as f:
+            np.save(f, doc)
+        with open ("numpy/"+direct+"/"+filename+"-occur-"+str(i)+".npy", "wb") as f:
+            np.save(f, occurences)
+        with open ("numpy/"+direct+"/"+filename+"-labels-"+str(i)+".npy", "wb") as f:
+            np.save(f, labels)
     return
 
 
 def main():
     ## Extracting data
+    ## Uncomment this for first time use
     # output_tr = []
     # output_val = []
     # dir_training = r'data/training'
@@ -408,10 +409,12 @@ def main():
     #          pass
 
     ## Reformatting the data
+    ## Uncomment this for first time use
     # (arg_data_training, ret_data_training) = make_objects(output_tr)
     # (arg_data_validation, ret_data_validation) = make_objects(output_val)
 
     #  Opening existing pickles
+    ## Comment this out for first time use
     with open("./pickles/arg_data_training.pkl", "rb") as f:
         arg_data_training = pickle.load(f)
     with open("./pickles/arg_data_validation.pkl", "rb") as f:
@@ -422,20 +425,24 @@ def main():
         ret_data_validation = pickle.load(f)
 
     ##  vectorizing docstring
+    ## Uncomment this for first time use
     # print ("Training word2vec for docstring...")
     # train_w2v(ret_data_training, ret_data_validation)
     # print ("Making the list of all labels...")
     # make_labels_list(arg_data_training, arg_data_validation,
     #                  ret_data_training, ret_data_validation)
 
-    #  Opening existing pickles
+    ##Opening existing pickles
+    ## Comment this out for first time use
     with open("./pickles/all_labels.pkl", "rb") as f:
         all_labels = pickle.load(f)
-
     w2v_docstring = KeyedVectors.load('w2v_docstring.wordvectors', mmap='r')
+
+    # Populating the chars alphabet
     chars = populate_alphabet(arg_data_training+arg_data_validation)
 
     ## Create new pickles
+    ## Uncomment this for first time use
     # with open("arg_data_training.pkl", "wb") as f:
     #     pickle.dump(arg_data_training, f)
 
@@ -450,6 +457,7 @@ def main():
     
 
     ## Saving extracted data
+    ## Uncomment this for first time use
     # print ("training/arg")
     # save_info(arg_data_training, "training/arg", chars, w2v_docstring, all_labels, 25000)
     # print ("val/arg")
