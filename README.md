@@ -1,7 +1,5 @@
 # TypeWriter, But Worse
 
-## Summary
-
   This project is an attempt at neural type prediction in Python code inspired by the paper "TypeWriter: Neural Type Prediction with Search-based Validation" by Michael Pradel, Georgios Gousios, Jason Liu, Satish Chandra.
 
   This variant features a slightly different approach to feature extraction and overall ML pipeline. 
@@ -10,7 +8,7 @@
 
   ![pipeline picture](https://i.ibb.co/ryDCwFk/pipeline.png)
 
--------------------  
+
 ## Running guide:  
 
 ### Prerequisites:  
