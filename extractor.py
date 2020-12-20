@@ -372,6 +372,7 @@ def save_info (data, prefix, chars, w2v, all_labels, limit):
             print (doc.shape)
             print (occurences.shape)
             print (labels.shape)
+            os.makedirs("numpy/"+direct, exist_ok=True)
         with open ("numpy/"+direct+"/"+filename+"-body-"+str(i)+".npy", "wb") as f:
             np.save(f, bodyinf)
         with open ("numpy/"+direct+"/"+filename+"-doc-"+str(i)+".npy", "wb") as f:

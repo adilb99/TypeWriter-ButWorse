@@ -1,6 +1,14 @@
-# TypeWriter
+# TypeWriter, But Worse
 
-  ! Short project summary here !
+## Summary
+
+  This project is an attempt at neural type prediction in Python code inspired by the paper "TypeWriter: Neural Type Prediction with Search-based Validation" by Michael Pradel, Georgios Gousios, Jason Liu, Satish Chandra.
+
+  This variant features a slightly different approach to feature extraction and overall ML pipeline. 
+
+  Here's how our pipeline looks:
+
+  ![pipeline picture](https://i.ibb.co/ryDCwFk/pipeline.png)
 
 -------------------  
 ## Running guide:  
@@ -12,6 +20,8 @@
 ```virtualenv -p python3 venv  ```  
 ```source venv/bin/activate ```
 
++ To succesfully run the extractor, Python 3.9 is needed as this project uses functions that are only available with this October 2020 Python release. 
+
 + To install dependencies, run:  
 ```pip3 install -r requirements.txt```
 
@@ -19,16 +29,16 @@
 
 + Extract the training.tar.gz and validation.tar.gz archives of raw .py files in the ./data directory 
 
-+ Open extractor.py and uncomment the commented code in the ``` main ``` function to extract and vectorize data from .py files
++ Currently, ``` main ``` function in the extractor.py uses pre-processed pickles of data in the ./pickles directory. Run extractor.py to use those pickles and convert them to .npy files that can be used by the model.
 
-+ Alternatively, keep the code commented and run it as is to use/open pickles of already extracted code. (in the ./pickles directory)
++ Alternatively, comment/uncomment parts of the code in the ``` main ``` function as specified inside of it to run extraction on the raw .py files extracted earlier.
 
-+ Adjust the directory path in the code to store .npy files after processing.
++ Then, it should create necessary .npy files in the newly made ./numpy directory
 
-+ The .npy files are then ready to be used by the model
++ The .npy files are then ready to be used by the model.
 
 ### Running the model:
-+ Change the paths and configurations in your config file. 
++ Change the paths and configurations in the config.json file. 
 
 + Run the model:  
 ```python3 main.py -config [path_to_config_file]```
